@@ -14,4 +14,17 @@ locals {
   kubernetes_secret_name     = "${var.docker_image_name}-redis"
   kubernetes_service_name    = "${var.docker_image_name}-service"
   secret_provider_class_name = "${var.docker_image_name}-kv-secrets"
+
+  kubernetes_app_instances = {
+    canonical = {
+      deployment_name = var.docker_image_name
+      label           = var.docker_image_name
+      service_name    = var.docker_image_name
+    }
+    named = {
+      deployment_name = local.kubernetes_deployment_name
+      label           = local.kubernetes_deployment_name
+      service_name    = local.kubernetes_service_name
+    }
+  }
 }
