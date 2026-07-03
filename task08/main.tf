@@ -127,6 +127,7 @@ resource "kubectl_manifest" "secret_provider" {
 resource "kubectl_manifest" "deployment" {
   yaml_body = templatefile("${path.module}/k8s-manifests/deployment.yaml.tftpl", {
     namespace                     = var.kubernetes_namespace
+    deployment_name               = local.kubernetes_deployment_name
     app_name                      = var.docker_image_name
     container_name                = local.container_name
     image                         = "${module.acr.login_server}/${local.app_image_name}"
@@ -151,6 +152,7 @@ resource "kubectl_manifest" "deployment" {
 resource "kubectl_manifest" "service" {
   yaml_body = templatefile("${path.module}/k8s-manifests/service.yaml", {
     namespace      = var.kubernetes_namespace
+    service_name   = local.kubernetes_service_name
     app_name       = var.docker_image_name
     container_port = var.container_port
   })
@@ -169,7 +171,7 @@ resource "kubectl_manifest" "service" {
 data "kubectl_manifest" "app_service" {
   api_version = "v1"
   kind        = "Service"
-  name        = var.docker_image_name
+  name        = local.kubernetes_service_name
   namespace   = var.kubernetes_namespace
 
   depends_on = [kubectl_manifest.service]
