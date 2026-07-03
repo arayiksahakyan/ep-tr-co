@@ -5,5 +5,5 @@ output "aci_fqdn" {
 
 output "aks_lb_ip" {
   description = "Load Balancer IP address of the application running in Azure Kubernetes Service."
-  value       = data.kubernetes_service.app.status[0].load_balancer[0].ingress[0].ip
+  value       = data.kubectl_manifest.app_service.results["load_balancer_ip"]
 }
