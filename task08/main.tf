@@ -173,7 +173,7 @@ data "kubectl_manifest" "app_service" {
   namespace   = var.kubernetes_namespace
 
   fields = {
-    load_balancer_ip = "status.loadBalancer.ingress.0.ip"
+    load_balancer_ip = "status.loadBalancer.ingress.[0].ip"
   }
 
   depends_on = [kubectl_manifest.service]
