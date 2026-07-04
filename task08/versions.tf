@@ -9,7 +9,7 @@ terraform {
 
     kubectl = {
       source  = "alekc/kubectl"
-      version = ">= 2.4.1, < 3.0.0"
+      version = "2.0.0"
     }
 
     kubernetes = {
@@ -28,7 +28,6 @@ provider "kubectl" {
   client_certificate     = base64decode(module.aks.kube_config.client_certificate)
   client_key             = base64decode(module.aks.kube_config.client_key)
   cluster_ca_certificate = base64decode(module.aks.kube_config.cluster_ca_certificate)
-  lazy_load              = true
   load_config_file       = false
 }
 
