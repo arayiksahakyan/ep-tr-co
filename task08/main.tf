@@ -147,7 +147,12 @@ resource "kubectl_manifest" "deployment" {
     }
   }
 
-  depends_on = [kubectl_manifest.secret_provider, module.acr]
+  depends_on = [
+    kubectl_manifest.secret_provider,
+    module.acr,
+    module.aks,
+    module.redis,
+  ]
 }
 
 resource "kubectl_manifest" "service" {
@@ -161,7 +166,7 @@ resource "kubectl_manifest" "service" {
   wait_for {
     field {
       key        = "status.loadBalancer.ingress.[0].ip"
-      value      = "^(\\d+(\\.|$)){4}"
+      value      = "^(\\d{1,3}\\.){3}\\d{1,3}$"
       value_type = "regex"
     }
   }
