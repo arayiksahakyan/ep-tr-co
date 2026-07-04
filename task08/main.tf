@@ -111,14 +111,11 @@ module "aci" {
 
 resource "kubectl_manifest" "secret_provider" {
   yaml_body = templatefile("${path.module}/k8s-manifests/secret-provider.yaml.tftpl", {
-    namespace                            = var.kubernetes_namespace
-    secret_provider_class_name           = local.secret_provider_class_name
-    kubernetes_secret_name               = local.kubernetes_secret_name
-    redis_hostname_secret_name           = var.redis_hostname_secret_name
-    redis_primary_key_secret_name        = var.redis_primary_key_secret_name
-    key_vault_secrets_provider_client_id = module.aks.key_vault_secrets_provider_client_id
-    key_vault_name                       = module.keyvault.name
-    tenant_id                            = data.azurerm_client_config.current.tenant_id
+    aks_kv_access_identity_id  = module.aks.key_vault_secrets_provider_client_id
+    kv_name                    = module.keyvault.name
+    redis_url_secret_name      = var.redis_hostname_secret_name
+    redis_password_secret_name = var.redis_primary_key_secret_name
+    tenant_id                  = data.azurerm_client_config.current.tenant_id
   })
 
   depends_on = [module.aks, module.redis]
@@ -126,18 +123,9 @@ resource "kubectl_manifest" "secret_provider" {
 
 resource "kubectl_manifest" "deployment" {
   yaml_body = templatefile("${path.module}/k8s-manifests/deployment.yaml.tftpl", {
-    namespace                     = var.kubernetes_namespace
-    deployment_name               = local.kubernetes_deployment_name
-    app_name                      = var.docker_image_name
-    container_name                = local.container_name
-    image                         = "${module.acr.login_server}/${local.app_image_name}"
-    container_port                = var.container_port
-    redis_port                    = var.redis_port
-    redis_ssl_mode                = var.redis_ssl_mode
-    kubernetes_secret_name        = local.kubernetes_secret_name
-    redis_hostname_secret_name    = var.redis_hostname_secret_name
-    redis_primary_key_secret_name = var.redis_primary_key_secret_name
-    secret_provider_class_name    = local.secret_provider_class_name
+    acr_login_server = module.acr.login_server
+    app_image_name   = var.docker_image_name
+    image_tag        = var.image_tag
   })
 
   wait_for {
@@ -156,12 +144,7 @@ resource "kubectl_manifest" "deployment" {
 }
 
 resource "kubectl_manifest" "service" {
-  yaml_body = templatefile("${path.module}/k8s-manifests/service.yaml", {
-    namespace      = var.kubernetes_namespace
-    service_name   = local.kubernetes_service_name
-    app_name       = var.docker_image_name
-    container_port = var.container_port
-  })
+  yaml_body = file("${path.module}/k8s-manifests/service.yaml")
 
   wait_for {
     field {

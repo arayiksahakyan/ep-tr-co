@@ -10,8 +10,8 @@ locals {
   aci_dns_name_label         = lower(local.aci_name)
   app_image_name             = "${var.docker_image_name}:${var.image_tag}"
   container_name             = var.docker_image_name
-  kubernetes_deployment_name = "${var.docker_image_name}-deployment"
-  kubernetes_secret_name     = "${var.docker_image_name}-redis"
-  kubernetes_service_name    = "${var.docker_image_name}-service"
-  secret_provider_class_name = "${var.docker_image_name}-kv-secrets"
+  kubernetes_deployment_name = "redis-flask-app"
+  kubernetes_secret_name     = "redis-secrets"
+  kubernetes_service_name    = "redis-flask-app-service"
+  secret_provider_class_name = "redis-flask-app-kv-integration"
 }
