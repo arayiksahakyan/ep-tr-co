@@ -23,20 +23,6 @@ resource "azurerm_container_registry_task" "build" {
     image_names          = [var.image_name]
     push_enabled         = true
   }
-
-  source_trigger {
-    name           = "source-commit"
-    events         = ["commit"]
-    repository_url = var.repository_url
-    source_type    = "Github"
-    branch         = var.repository_branch
-    enabled        = true
-
-    authentication {
-      token      = var.git_pat
-      token_type = "PAT"
-    }
-  }
 }
 
 resource "azurerm_container_registry_task_schedule_run_now" "build" {
