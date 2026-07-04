@@ -14,9 +14,4 @@ locals {
   kubernetes_secret_name     = "redis-secret"
   kubernetes_service_name    = var.docker_image_name
   secret_provider_class_name = "azure-kvname"
-
-  legacy_kubernetes_deployment_name = "${var.docker_image_name}-deployment"
-  legacy_kubernetes_secret_name     = "${var.docker_image_name}-redis"
-  legacy_kubernetes_service_name    = "${var.docker_image_name}-service"
-  legacy_secret_provider_class_name = "${var.docker_image_name}-kv-secrets"
 }
