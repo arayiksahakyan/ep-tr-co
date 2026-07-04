@@ -29,6 +29,16 @@ spec:
               value: "${redis_port}"
             - name: REDIS_SSL_MODE
               value: "${redis_ssl_mode}"
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ${kubernetes_secret_name}
+                  key: REDIS_URL
+            - name: REDIS_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: ${kubernetes_secret_name}
+                  key: REDIS_PWD
             - name: REDIS_URL_FILE
               value: /mnt/secrets-store/${redis_hostname_secret_name}
             - name: REDIS_PWD_FILE

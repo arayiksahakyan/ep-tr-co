@@ -12,6 +12,10 @@ terraform {
       version = ">= 2.4.1, < 3.0.0"
     }
 
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = ">= 2.30.0, < 3.0.0"
+    }
   }
 }
 
@@ -26,4 +30,11 @@ provider "kubectl" {
   cluster_ca_certificate = base64decode(module.aks.kube_config.cluster_ca_certificate)
   lazy_load              = true
   load_config_file       = false
+}
+
+provider "kubernetes" {
+  host                   = module.aks.kube_config.host
+  client_certificate     = base64decode(module.aks.kube_config.client_certificate)
+  client_key             = base64decode(module.aks.kube_config.client_key)
+  cluster_ca_certificate = base64decode(module.aks.kube_config.cluster_ca_certificate)
 }

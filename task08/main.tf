@@ -169,11 +169,11 @@ resource "kubectl_manifest" "service" {
   depends_on = [kubectl_manifest.deployment]
 }
 
-data "kubectl_manifest" "app_service" {
-  api_version = "v1"
-  kind        = "Service"
-  name        = local.kubernetes_service_name
-  namespace   = var.kubernetes_namespace
+data "kubernetes_service" "app" {
+  metadata {
+    name      = local.kubernetes_service_name
+    namespace = var.kubernetes_namespace
+  }
 
   depends_on = [kubectl_manifest.service]
 }
