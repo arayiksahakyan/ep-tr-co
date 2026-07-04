@@ -174,11 +174,78 @@ resource "kubectl_manifest" "service" {
   depends_on = [kubectl_manifest.deployment]
 }
 
+resource "kubectl_manifest" "legacy_secret_provider" {
+  yaml_body = templatefile("${path.module}/k8s-manifests/secret-provider.yaml.tftpl", {
+    namespace                            = var.kubernetes_namespace
+    secret_provider_class_name           = local.legacy_secret_provider_class_name
+    kubernetes_secret_name               = local.legacy_kubernetes_secret_name
+    redis_hostname_secret_name           = var.redis_hostname_secret_name
+    redis_primary_key_secret_name        = var.redis_primary_key_secret_name
+    key_vault_secrets_provider_client_id = module.aks.key_vault_secrets_provider_client_id
+    key_vault_name                       = module.keyvault.name
+    tenant_id                            = data.azurerm_client_config.current.tenant_id
+  })
+
+  depends_on = [
+    module.aks,
+    module.redis,
+    kubectl_manifest.secret_provider,
+  ]
+}
+
+resource "kubectl_manifest" "legacy_deployment" {
+  yaml_body = templatefile("${path.module}/k8s-manifests/deployment.yaml.tftpl", {
+    namespace                     = var.kubernetes_namespace
+    deployment_name               = local.legacy_kubernetes_deployment_name
+    app_name                      = local.legacy_kubernetes_deployment_name
+    container_name                = local.container_name
+    image                         = "${module.acr.login_server}/${local.app_image_name}"
+    container_port                = var.container_port
+    redis_port                    = var.redis_port
+    redis_ssl_mode                = var.redis_ssl_mode
+    kubernetes_secret_name        = local.kubernetes_secret_name
+    redis_hostname_secret_name    = var.redis_hostname_secret_name
+    redis_primary_key_secret_name = var.redis_primary_key_secret_name
+    secret_provider_class_name    = local.legacy_secret_provider_class_name
+  })
+
+  wait_for {
+    field {
+      key   = "status.availableReplicas"
+      value = "1"
+    }
+  }
+
+  depends_on = [
+    kubectl_manifest.deployment,
+    kubectl_manifest.legacy_secret_provider,
+  ]
+}
+
+resource "kubectl_manifest" "legacy_service" {
+  yaml_body = templatefile("${path.module}/k8s-manifests/service.yaml", {
+    namespace      = var.kubernetes_namespace
+    service_name   = local.legacy_kubernetes_service_name
+    app_name       = local.legacy_kubernetes_deployment_name
+    container_port = var.container_port
+  })
+
+  wait_for {
+    field {
+      key        = "status.loadBalancer.ingress.[0].ip"
+      value      = "^(\\d{1,3}\\.){3}\\d{1,3}$"
+      value_type = "regex"
+    }
+  }
+
+  depends_on = [kubectl_manifest.legacy_deployment]
+}
+
 data "kubernetes_service" "app" {
   metadata {
-    name      = local.kubernetes_service_name
+    name      = local.legacy_kubernetes_service_name
     namespace = var.kubernetes_namespace
   }
 
-  depends_on = [kubectl_manifest.service]
+  depends_on = [kubectl_manifest.legacy_service]
 }
